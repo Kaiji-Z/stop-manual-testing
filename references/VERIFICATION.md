@@ -183,6 +183,8 @@ A feature is done if and only if ALL hold:
 **[auto-fill]** = scan code with evidence (file:line); missing evidence → fill "none, needed", no guessing
 **[must-ask]** = ask the developer per the template; fill after an answer; before that fill "pending"; guessing forbidden
 
+**Language rule:** all conversation with the developer — announcements, the [must-ask] questions in §8.4 / §8.5, gap-list reports — follows the developer's language. Infer it from their messages; never paste the English templates verbatim at a non-English speaker.
+
 ### 8.1 System entry [auto-fill]
 - Backend start command: [evidence]
 - CLI/API command to trigger a workflow: [evidence]

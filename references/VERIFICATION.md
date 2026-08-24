@@ -17,12 +17,15 @@
 2. ACI audit (§2): judge 2.1 / 2.2 / 2.3 one by one. Each item MUST carry evidence (file:line).
 3. Test infra inventory: regression / assertions / supervisor / flag — four items.
 4. Output gap list: a table sorted by P0/P1/P2, with remediation plan.
-5. Fill Project Parameters (§8): [auto-fill] items by scanning code with evidence; [must-ask] items by asking the developer in one batch.
-6. Update AGENTS.md (the ONLY write operation allowed this round): paste audit / status / backlog + add top-level reference.
+5. Instantiate the protocol locally, then fill Project Parameters (§8):
+   a. If no VERIFICATION.md exists in the project root, copy this protocol there. That project-local copy is now THE instance: all §8 filling, all future updates, all project customization happen in it. The global skill template stays generic and untouched.
+   b. If a project-local VERIFICATION.md already exists (previous run or manual install), use it — never overwrite it; its filled §8 is this project's state.
+   c. Then fill §8 in the local copy: [auto-fill] items by scanning code with evidence; [must-ask] items by asking the developer in one batch.
+6. Update AGENTS.md: paste audit / status / backlog + a top-level reference pointing to the PROJECT-LOCAL `VERIFICATION.md` (§9 template), not to the skill.
 7. Stop and report: one-line stage summary + top-3 P0 items + ask "ready to start remediation?"
 ```
 
-**Modifying production code is FORBIDDEN this round.** Remediation requires user confirmation, next round.
+**Writes allowed this round: the project-local `VERIFICATION.md` (instantiate + §8 fill) and `AGENTS.md`. Modifying production code is FORBIDDEN.** Remediation requires user confirmation, next round.
 
 ---
 
@@ -178,7 +181,9 @@ A feature is done if and only if ALL hold:
 
 ---
 
-## §8 PROJECT PARAMETERS (filled during Diagnosis step 5, by category)
+## §8 PROJECT PARAMETERS (filled during Diagnosis step 5, in the PROJECT-LOCAL copy)
+
+> This section is the per-project customization zone. It is meaningful only in a project-local instance — a global template with filled §8 items is cross-project contamination. Filling always targets the copy instantiated in Diagnosis step 5a/5b.
 
 **[auto-fill]** = scan code with evidence (file:line); missing evidence → fill "none, needed", no guessing
 **[must-ask]** = ask the developer per the template; fill after an answer; before that fill "pending"; guessing forbidden
@@ -256,7 +261,8 @@ Fill after answer: "awaiting install of [chosen tool]". **Until installed, §3/�
 # {project name} · Agent Development Guide
 
 ## Mandatory protocol
-Before developing any feature or changing any code, read and follow `VERIFICATION.md`.
+Before developing any feature or changing any code, read and follow the project-local `VERIFICATION.md`.
+It carries this project's §8 parameters — edit it here, in this repo, never in a global skill directory.
 Output that violates a red line in VERIFICATION.md §7 is void.
 
 ## Project overview / Build & run / Verification system status / Test infra status / Verification backlog / Project-specific conventions

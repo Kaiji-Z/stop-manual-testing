@@ -46,45 +46,40 @@ The skill is self-contained — just `SKILL.md` + `references/VERIFICATION.md`. 
    "start diagnosis" / "开始诊断"
    "read VERIFICATION.md"
 
-4. The agent runs a 7-step diagnosis that is READ-ONLY on your code:
+4. The agent runs a 7-step diagnosis — read-only on your code, writing exactly two files:
    - reads project context (AGENTS.md, build config, entry code, test entry)
    - ACI audit: can your system run without the UI? are states logged? interfaces programmatic?
    - inventories existing test infrastructure
    - outputs a priority-sorted gap list (P0/P1/P2, with remediation plans)
-   - auto-fills what code evidence supports; ASKS you for the critical items
-     (acceptance criteria, supervisor design) — never guesses those
-   - updates AGENTS.md, persisting the diagnosis
+   - instantiates the protocol into your project root as `VERIFICATION.md` — the
+     project-local, customized copy (the globally installed skill stays a generic template)
+   - fills §8 parameters in that local copy: auto-fills what code evidence supports;
+     ASKS you for the critical items (acceptance criteria, supervisor design) — never guesses those
+   - updates AGENTS.md to point at the project-local `VERIFICATION.md`, persisting the diagnosis
    - stops and reports; waits for your go-ahead before touching code
 ```
 
-No code changes happen in the diagnosis round. Only AGENTS.md is written. Remediation waits for your explicit confirmation.
+No production-code changes happen in the diagnosis round. Exactly two files are written: the project-local `VERIFICATION.md` and `AGENTS.md`. Remediation waits for your explicit confirmation.
 
-## Advanced: use as a permanent project protocol (not just a skill)
+## Template vs. instance: how project-local instantiation works
 
-The skill form is **on-demand**: you invoke it per session, and once the session ends the active protocol leaves working memory. This is great for trying things out and for multi-project use. But if you have **one core project** where you want the verification protocol to apply **permanently, to every session, without re-invoking**, copy the protocol body into the project itself:
+The diagnosis **instantiates** the protocol into your project root. From that moment, there are two artifacts with different jobs:
+
+- **The skill (global template)** — generic, shared by all projects. Upgrade it once and every *new* diagnosis gets the new version. Never contains project-specific data.
+- **`VERIFICATION.md` in your project root (instance)** — this project's customized copy: filled §8 parameters, acceptance criteria, supervisor design, evolving gap lists. Your `AGENTS.md` points at **this local file**, not at the skill — because what your project obeys is *your* customized protocol, not the generic template.
+
+So after the first diagnosis, every session in that project auto-reads the protocol from `AGENTS.md` — you never have to re-invoke the skill just to keep the protocol in force. Re-invoking the skill is only for *re-diagnosis* (fresh audit, updated gap list).
+
+Don't want the skill at all? The manual path is equivalent:
 
 ```bash
-# Make this one project always follow the protocol
-cp ~/.agents/skills/stop-manual-testing/references/VERIFICATION.md /path/to/your-project/VERIFICATION.md
+cp VERIFICATION.md /path/to/your-project/VERIFICATION.md
+# then add to your project's AGENTS.md (create if absent):
+# ## Mandatory protocol
+# Before developing any feature or changing any code, read and follow the project-local `VERIFICATION.md`.
 ```
 
-Then add one line to your project's `AGENTS.md` (create it if absent):
-
-```markdown
-## Mandatory protocol
-Before developing any feature or changing any code, read and follow `VERIFICATION.md`.
-Output that violates a red line in VERIFICATION.md §7 is void.
-```
-
-Now every session in that project auto-reads the protocol — you never have to invoke the skill. This is the trade-off:
-
-| | Skill (on-demand) | Protocol file (permanent) |
-|---|---|---|
-| Trigger cost | Must invoke each session | Auto-read every session |
-| Scope | Global, any project | Bound to one project |
-| Maintenance | Update once, all projects get it | Each project has its own copy (can drift) |
-
-**Honest note:** a file in the project root lowers the *trigger* cost, but it does NOT raise the *compliance* rate. Both forms rely on the GATE mechanism for checkable compliance — the file form is "background knowledge" the agent can forget mid-task, while the loaded skill is "active instruction" in working memory. If strict adherence matters, spot-check the GATE declarations regardless of which form you use. The protocol body is identical in both; only the loading semantics differ.
+**Honest note:** a file in the project root lowers the *trigger* cost, but it does NOT raise the *compliance* rate. Both forms rely on the GATE mechanism for checkable compliance — the file form is "background knowledge" the agent can forget mid-task, while the loaded skill is "active instruction" in working memory. If strict adherence matters, spot-check the GATE declarations regardless of which form you use. The protocol text is the same at instantiation time; the local copy then drifts *by design* as the project customizes it.
 
 ## Why it actually drives the agent (core mechanisms)
 
@@ -204,44 +199,39 @@ skill 是自包含的——只有 `SKILL.md` + `references/VERIFICATION.md`。�
    "开始诊断" / "start diagnosis"
    "读一下 VERIFICATION.md"
 
-4. agent 跑一套对你的代码只读的 7 步诊断:
+4. agent 跑一套 7 步诊断——对你的代码只读,只写两个文件:
    - 读项目上下文(AGENTS.md、构建配置、入口代码、测试入口)
    - ACI 体检:能脱离 UI 跑吗?状态留痕吗?接口程序化吗?
    - 摸底现有测试基建
    - 输出按优先级排序的差距清单(P0/P1/P2,带改造方案)
-   - 自动填能填的;该问你的(验收标准、supervisor 设计)问你,绝不瞎猜
-   - 更新 AGENTS.md,把诊断落盘
+   - 把协议**实例化**到你项目根目录的 `VERIFICATION.md`——项目本地、可定制的副本
+     (全局安装的 skill 始终保持通用模板)
+   - 在本地副本里填 §8 参数:自动填能填的;该问你的(验收标准、supervisor 设计)问你,绝不瞎猜
+   - 更新 AGENTS.md,指向项目本地的 `VERIFICATION.md`,把诊断落盘
    - 停下报告,等你点头后才动代码
 ```
 
-诊断轮次不改业务代码,只写 AGENTS.md。改造要等你明确确认。
+诊断轮次不改业务代码。只写两个文件:项目本地的 `VERIFICATION.md` 和 `AGENTS.md`。改造要等你明确确认。
 
-## 进阶:作为永久项目协议使用(不只是 skill)
+## 模板与实例:项目本地实例化是怎么工作的
 
-Skill 形态是**按需的**:每个会话调一次,会话结束后协议就离开了工作记忆。这适合试用和多项目场景。但如果你有**一个核心项目**,想让验证协议**永久、对每个会话生效、不用重新调**,就把协议主体复制进项目本身:
+诊断会把协议**实例化**到你项目根目录。从那一刻起,存在两个职责不同的工件:
+
+- **skill(全局模板)**——通用,所有项目共享。升级一次,之后每次*新诊断*拿到的就是新版。永不包含项目数据。
+- **你项目根的 `VERIFICATION.md`(实例)**——本项目的定制副本:填好的 §8 参数、验收标准、supervisor 设计、持续演进的差距清单。你的 `AGENTS.md` 指向**这个本地文件**,而不是指向 skill——因为你的项目遵守的是*你的*定制协议,不是通用模板。
+
+所以首次诊断之后,该项目的每个会话都通过 AGENTS.md 自动读到协议——不用为了"让协议持续生效"再调 skill。再调 skill 只为了*重新诊断*(新鲜审计、更新差距清单)。
+
+完全不想用 skill?手动路径等价:
 
 ```bash
-# 让这个项目永远遵守协议
-cp ~/.agents/skills/stop-manual-testing/references/VERIFICATION.md /path/to/your-project/VERIFICATION.md
+cp VERIFICATION.md /path/to/your-project/VERIFICATION.md
+# 然后在项目的 AGENTS.md(没有就建一个)里加:
+# ## 强制规范
+# 开发任何功能、改任何代码前,必读并遵守项目本地的 `VERIFICATION.md`。
 ```
 
-然后在项目的 `AGENTS.md`(没有就建一个)里加一行:
-
-```markdown
-## 强制规范
-开发任何功能、改任何代码前,必读并遵守 `VERIFICATION.md`。
-违反 VERIFICATION.md §7 红线的产出视为无效。
-```
-
-这样该项目的每个会话都会自动读到协议——你不用再调 skill。取舍如下:
-
-| | Skill(按需) | 协议文件(永久) |
-|---|---|---|
-| 触发成本 | 每个会话要主动调 | 每个会话自动读 |
-| 作用域 | 全局,任意项目 | 绑定单个项目 |
-| 维护 | 改一处,所有项目受益 | 每个项目各有一份(可能失同步) |
-
-**诚实提醒**:项目根的文件降低了*触发*成本,但**没有提高*遵守率***。两种形态都靠 GATE 机制保证可核验的遵守——文件形态是 agent 干活时可能忘记的"背景知识",而加载后的 skill 是工作记忆里的"活跃指令"。如果严格遵守很重要,不管用哪种形态,都要抽查 GATE 声明。两种形态的协议主体是同一份;只有加载语义不同。
+**诚实提醒**:项目根的文件降低了*触发*成本,但**没有提高*遵守率***。两种形态都靠 GATE 机制保证可核验的遵守——文件形态是 agent 干活时可能忘记的"背景知识",而加载后的 skill 是工作记忆里的"活跃指令"。如果严格遵守很重要,不管用哪种形态,都要抽查 GATE 声明。协议文本在实例化那一刻是相同的;之后本地副本*按设计地*随项目定制而分化。
 
 ## 为什么它能真正驱动 agent(核心机制)
 
